@@ -1,133 +1,76 @@
-/* eslint-disable */
-const webpack = require("webpack");
-const { join } = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const dotenv = require("dotenv-safe");
-const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
+const webpack = require('webpack');
+const { join } = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+const dotenv = require('dotenv-safe');
 
-const { required: env } = dotenv.config();
+const { required } = dotenv.config();
+
+const htmlPlugin = new HtmlWebpackPlugin({
+  favicon: join(__dirname, 'public', 'favicon.ico'),
+  template: join(__dirname, 'public', 'index.html'),
+});
+
+const isDevelopment = process.env.NODE_ENV === 'development';
 
 /**
- * @returns {webpack.Configuration}
+ * @type {webpack.Configuration}
  */
-const createConfig = () => {
-  /**
-   * @type {webpack.Configuration}
-   */
-  const config = {
-    entry: join(__dirname, "src", "index.tsx"),
-    output: {
-      path: join(__dirname, "build"),
-      filename: "bundle.js",
-      publicPath: "/",
-    },
-    performance: false,
-    plugins: [
-      new ForkTsCheckerWebpackPlugin(),
-      new webpack.EnvironmentPlugin(env),
-      new HtmlWebpackPlugin({
-        template: join(__dirname, "public", "index.html"),
-        favicon: join(__dirname, "public", "favicon.ico"),
-      }),
+module.exports = {
+  entry: join(__dirname, 'src', 'index.tsx'),
+  output: {
+    path: join(__dirname, 'build'),
+    filename: 'bundle.js',
+    publicPath: '/',
+  },
+  devtool: isDevelopment ? 'inline-source-map' : 'source-map',
+  performance: false,
+
+  resolve: {
+    extensions: ['.js', '.ts', '.tsx'],
+  },
+
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            cacheDirectory: true,
+          },
+        },
+      },
+      {
+        test: /\.(png|svg|jpg|gif)$/,
+        use: ['file-loader'],
+      },
+      {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader'],
+      },
     ],
-    resolve: {
-      extensions: [".js", ".jsx", ".ts", ".tsx"],
-    },
-    module: {
-      rules: [
-        {
-          test: /\.(png|svg|jpg|gif)$/,
-          use: ["file-loader"],
-        },
-        {
-          test: /\.css$/i,
-          use: ["style-loader", "css-loader"],
-        },
-      ],
-    },
-  };
+  },
 
-  if (process.env.NODE_ENV === "development") {
-    return {
-      ...config,
-      devServer: {
-        inline: true,
-        historyApiFallback: true,
-        hot: true,
-        open: true,
+  plugins: [
+    isDevelopment && new webpack.HotModuleReplacementPlugin(),
+    isDevelopment && new ReactRefreshWebpackPlugin(),
+    htmlPlugin,
+    new ForkTsCheckerWebpackPlugin({
+      typescript: {
+        configFile: join(__dirname, 'tsconfig.json'),
       },
-      devtool: "eval-source-map",
-      module: {
-        rules: [
-          ...config.module.rules,
-          {
-            test: /\.tsx?$/,
-            exclude: /node_modules/,
-            use: {
-              loader: "babel-loader",
-              options: {
-                babelrc: false,
-                cacheDirectory: true,
-                presets: [
-                  [
-                    "@babel/preset-env",
-                    {
-                      targets: {
-                        browsers: "last 2 versions, not dead, > 0.25%",
-                      },
-                    },
-                  ],
-                  ["@babel/preset-typescript", { onlyRemoveTypeImports: true }],
-                  "@babel/preset-react",
-                ],
-                plugins: ["react-hot-loader/babel"],
-              },
-            },
-          },
-        ],
-      },
-      resolve: {
-        ...config.resolve,
-        modules: ["node_modules"],
-        alias: {
-          "react-dom": "@hot-loader/react-dom",
-        },
-      },
-    };
-  }
+    }),
+    new webpack.EnvironmentPlugin(required),
+  ].filter(Boolean),
 
-  return {
-    ...config,
-    devtool: "source-map",
-    module: {
-      rules: [
-        ...config.module.rules,
-        {
-          test: /\.tsx?$/,
-          exclude: /node_modules/,
-          use: {
-            loader: "babel-loader",
-            options: {
-              babelrc: false,
-              cacheDirectory: true,
-              presets: [
-                [
-                  "@babel/preset-env",
-                  {
-                    targets: { browsers: "last 2 versions, not dead, > 0.25%" },
-                  },
-                ],
-                ["@babel/preset-typescript", { onlyRemoveTypeImports: true }],
-                "@babel/preset-react",
-              ],
-            },
-          },
-        },
-      ],
-    },
-  };
+  devServer: {
+    static: join(__dirname, 'public'),
+    historyApiFallback: true,
+    open: true,
+    hot: true,
+    port: 3000,
+  },
 };
-
-const config = createConfig();
-
-module.exports = config;

@@ -1,30 +1,38 @@
 import { createGlobalStyle } from 'styled-components';
 
-export const GlobalStyle = createGlobalStyle`
-  * {
+const GlobalStyle = createGlobalStyle`
+ * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
   }
 
-  @media (max-width: 1080px) {
-    html {
-      font-size: 93.75%;
+  html {
+    font-size: 16px;
+
+    
+    @media screen and (min-width: 320px) {
+      html {
+        font-size: calc(16px + 6 * ((100vw - 320px) / 680));
+      }
+    }
+    
+    @media screen and (min-width: 1000px) {
+      html {
+        font-size: 22px;
+      }
     }
   }
 
-  @media (max-width: 720px) {
-    html {
-      font-size: 87.5%;
-    }
+
+  body {
+    background: ${props => props.theme.background};
+
+    -webkit-font-smoothing: antialiased;
+    font-family: sans-serif;
   }
 
-  html, body {
-    background: #333;
-    color: #fff;
-  }
-
-  input, textarea, button {
+  body, input, textarea, button {
     font-weight: 500;
   }
 
@@ -37,15 +45,17 @@ export const GlobalStyle = createGlobalStyle`
     font-weight: 600;
   }
 
-  h1 {
-    font-size: 2rem;
-  }
-
-  h2 {
-    font-size: 1.5rem;
-  }
-
   button {
     cursor: pointer;
   }
+
+  a{
+    text-decoration: none;
+    
+    &:visited{
+    color: inherit;
+    }
+  }
 `;
+
+export default GlobalStyle;
