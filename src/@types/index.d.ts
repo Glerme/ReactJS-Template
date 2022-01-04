@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 import 'styled-components';
 
 import { AppColors } from '../types/utils/colors';
